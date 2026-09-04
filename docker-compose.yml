@@ -1,0 +1,10 @@
+services:
+  newsbot:
+    build: .
+    container_name: indianewsbot
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DRY_RUN=true  # flip to false in .env to go live

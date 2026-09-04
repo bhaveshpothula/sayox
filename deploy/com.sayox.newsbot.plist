@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.sayox.newsbot</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>-m</string>
+        <string>app.main</string>
+        <string>--serve</string>
+    </array>
+
+    <!-- .env is loaded relative to cwd; must be the project dir -->
+    <key>WorkingDirectory</key>
+    <string>/Users/bhaveshpothula/Desktop/Claude Code</string>
+
+    <!-- start at login/boot -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- restart automatically after a crash -->
+    <key>KeepAlive</key>
+    <true/>
+
+    <!-- wait 30s between restarts so a crash loop cannot hammer anything -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+
+    <key>StandardOutPath</key>
+    <string>/Users/bhaveshpothula/Desktop/Claude Code/data/logs/bot.stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/bhaveshpothula/Desktop/Claude Code/data/logs/bot.stderr.log</string>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>

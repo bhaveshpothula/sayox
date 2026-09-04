@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SAYOX — India News → X</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #0c0e12; --card: #151922; --card2: #1b2130;
+    --border: #262d3d; --text: #e7ecf3; --muted: #8b95a7;
+    --accent: #1d9bf0; --green: #2ecc71; --red: #e05555;
+    --amber: #e8a13c; --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, "Segoe UI", Inter, Roboto, sans-serif;
+    min-height: 100vh; padding: 28px clamp(16px, 5vw, 72px) 80px;
+  }
+  header { display: flex; flex-wrap: wrap; align-items: baseline;
+    gap: 14px 28px; margin-bottom: 26px; }
+  .brand { font-size: 26px; font-weight: 800; letter-spacing: 3px; }
+  .brand span { color: var(--accent); }
+  .tagline { color: var(--muted); font-size: 14px; }
+  .stats { display: flex; gap: 10px; flex-wrap: wrap; margin-left: auto; }
+  .chip { background: var(--card); border: 1px solid var(--border);
+    border-radius: 999px; padding: 6px 14px; font-size: 12.5px;
+    color: var(--muted); }
+  .chip b { color: var(--text); }
+  .mode { border-color: #3d3320; color: var(--amber); }
+
+  .toolbar { display: flex; align-items: center; gap: 14px;
+    margin-bottom: 22px; flex-wrap: wrap; }
+  button { font: inherit; cursor: pointer; border: none; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  .scan-btn { background: var(--card); color: var(--text);
+    border: 1px solid var(--border); border-radius: 999px;
+    padding: 10px 22px; font-weight: 600; transition: border-color .15s; }
+  .scan-btn:hover:not(:disabled) { border-color: var(--accent); }
+  .scan-log { color: var(--muted); font-size: 13px; font-family: ui-monospace, monospace; }
+  .refresh-note { color: var(--muted); font-size: 12px; margin-left: auto; }
+
+  .new-stories { display: none; align-items: center; gap: 10px;
+    background: #10273b; border: 1px solid #2a5a83; color: var(--accent);
+    border-radius: 999px; padding: 8px 10px 8px 18px; font-size: 13px;
+    font-weight: 600; margin-bottom: 18px; }
+  .new-stories.show { display: flex; }
+  .new-stories button { background: var(--accent); color: #06121e;
+    border-radius: 999px; padding: 5px 14px; font-size: 12.5px;
+    font-weight: 700; }
+  .new-stories button:hover { filter: brightness(1.1); }
+  .new-stories .dismiss { background: none; color: var(--accent);
+    padding: 5px 8px; font-weight: 400; }
+
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 22px; align-items: start; }
+  @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } }
+
+  .card { background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px; }
+  .section-label { font-size: 11px; letter-spacing: 2px;
+    color: var(--muted); text-transform: uppercase; margin-bottom: 14px; }
+
+  .story-head { display: flex; justify-content: space-between;
+    gap: 16px; align-items: flex-start; }
+  h2.headline { font-size: 21px; line-height: 1.35; font-weight: 700;
+    margin-bottom: 8px; }
+  .reach { text-align: center; flex-shrink: 0; }
+  .reach .num { font-size: 34px; font-weight: 800; color: var(--accent); }
+  .reach .lbl { font-size: 10px; letter-spacing: 1.5px; color: var(--muted); }
+
+  .kind { display: inline-block; border-radius: 6px; padding: 2px 9px;
+    font-size: 10.5px; letter-spacing: 1.2px; font-weight: 700;
+    text-transform: uppercase; margin-right: 8px; vertical-align: middle; }
+  .kind.breaking { background: #43171a; color: #ff7373; }
+  .kind.developing { background: #3d3320; color: var(--amber); }
+  .kind.trending { background: #14324a; color: var(--accent); }
+  .kind.standard { background: var(--card2); color: var(--muted); }
+
+  .source-row { color: var(--muted); font-size: 13px; margin: 8px 0 4px;
+    display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  .source-row a { color: var(--accent); text-decoration: none; }
+  .source-row a:hover { text-decoration: underline; }
+  .link-btn { background: var(--card2); border: 1px solid var(--border);
+    color: var(--text); border-radius: 999px; padding: 5px 14px;
+    font-size: 12.5px; font-weight: 600; transition: border-color .15s; }
+  .link-btn:hover:not(:disabled) { border-color: var(--accent); }
+
+  .why { background: var(--card2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px; margin: 16px 0;
+    font-size: 13.5px; }
+  .why summary { cursor: pointer; font-weight: 700; list-style: none; }
+  .why summary::-webkit-details-marker { display: none; }
+  .why summary::after { content: " ▾"; color: var(--muted); }
+  details.why[open] summary::after { content: " ▴"; }
+  .why .summary-line { color: var(--muted); font-size: 13px;
+    margin-top: 5px; }
+  .signal-row { display: grid; grid-template-columns: 130px 1fr 40px;
+    gap: 12px; align-items: center; margin-top: 11px; font-size: 12.5px; }
+  .signal-row .name { color: var(--muted); }
+  .signal-row .val { text-align: right; font-weight: 700; }
+  .bar { height: 7px; background: #0d1117; border-radius: 99px;
+    overflow: hidden; }
+  .bar i { display: block; height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, #1d6fbf, var(--accent)); }
+  .score-note { color: var(--muted); font-size: 11.5px; margin-top: 14px;
+    line-height: 1.5; }
+
+  .tweet-box { border: 1px dashed #34618a; background: #0e1520;
+    border-radius: 12px; padding: 16px; margin-top: 16px; }
+  .tweet-box .label { font-size: 11px; letter-spacing: 1.5px;
+    color: var(--muted); text-transform: uppercase; margin-bottom: 8px;
+    display: flex; justify-content: space-between; align-items: center; }
+  .reset-btn { background: none; color: var(--muted); font-size: 12px;
+    text-decoration: underline; padding: 2px 4px; }
+  .reset-btn:hover:not(:disabled) { color: var(--accent); }
+  #tweet-editor { width: 100%; min-height: 130px; resize: vertical;
+    background: #0a1017; color: var(--text); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 14px; font: inherit;
+    font-size: 15px; line-height: 1.5; }
+  #tweet-editor:focus { outline: none; border-color: var(--accent); }
+  #tweet-editor.over { border-color: var(--red); }
+  .editor-foot { display: flex; justify-content: space-between;
+    align-items: center; margin-top: 9px; gap: 12px; flex-wrap: wrap; }
+  .counter { color: var(--muted); font-size: 12.5px;
+    font-family: ui-monospace, monospace; }
+  .counter.warn { color: var(--amber); }
+  .counter.over { color: var(--red); font-weight: 700; }
+  .editor-msg { font-size: 12px; color: var(--amber); }
+  .editor-msg.err { color: var(--red); }
+
+  .tag-block { margin-top: 13px; }
+  .tag-block .tlabel { font-size: 11px; letter-spacing: 1.5px;
+    color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+  .tag-list { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tag-chip { display: inline-flex; align-items: center; gap: 7px;
+    background: #10273b; border: 1px solid #2a5a83; color: var(--accent);
+    border-radius: 999px; padding: 4px 8px 4px 13px; font-size: 13px;
+    font-weight: 600; }
+  .tag-chip .x, .tag-chip .plus { background: none; color: var(--accent);
+    font-size: 14px; line-height: 1; padding: 0 4px; border-radius: 50%; }
+  .tag-chip .x:hover { color: var(--red); }
+  .tag-chip.off { background: var(--card2); border-color: var(--border);
+    color: var(--muted); opacity: .75; }
+  .tag-chip.off .plus { color: var(--muted); }
+  .tag-chip.off .plus:hover { color: var(--green); }
+  .tag-none { color: var(--muted); font-size: 12.5px; }
+
+  .actions { display: flex; align-items: center; justify-content: center;
+    gap: 42px; margin: 30px 0 8px; }
+  .action { display: flex; flex-direction: column; align-items: center;
+    gap: 10px; }
+  .action .desc { color: var(--muted); font-size: 12px; max-width: 130px;
+    text-align: center; }
+  .round { width: 92px; height: 92px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 34px; font-weight: 700; transition: transform .12s,
+    box-shadow .12s; border: 2px solid; }
+  .round:hover:not(:disabled) { transform: scale(1.06); }
+  .round:active:not(:disabled) { transform: scale(.96); }
+  .round.x { background: #0d1a2b; border-color: var(--accent);
+    color: var(--accent); }
+  .round.copy { background: #0d2417; border-color: var(--green);
+    color: var(--green); }
+  .round.copy.copied { background: var(--green); color: #06230f; }
+  .round.tick { background: #0e2815; border-color: var(--green);
+    color: var(--green); width: 76px; height: 76px; font-size: 30px; }
+  .skip-btn { background: none; color: var(--muted); font-size: 13px;
+    text-decoration: underline; padding: 8px; }
+  .skip-btn:hover { color: var(--red); }
+
+  .queue-card { margin-bottom: 14px; padding: 16px; }
+  .queue-item { padding: 13px 10px; border-bottom: 1px solid var(--border);
+    cursor: pointer; border-radius: 10px; transition: background .12s; }
+  .queue-item:last-child { border-bottom: none; }
+  .queue-item:hover { background: var(--card2); }
+  .queue-item.active { background: var(--card2); }
+  .q-head { font-size: 14px; font-weight: 600; line-height: 1.35; }
+  .q-meta { color: var(--muted); font-size: 12px; margin-top: 5px;
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .q-score { color: var(--accent); font-weight: 700; }
+  .q-sig { background: var(--card); border-radius: 6px; padding: 2px 7px;
+    font-size: 11px; color: var(--muted); }
+  .q-sig b { color: var(--text); }
+  .badge { border-radius: 6px; padding: 1px 7px; font-size: 10.5px;
+    letter-spacing: 1px; font-weight: 700; }
+  .badge.ready { background: #14324a; color: var(--accent); }
+  .badge.copied { background: #14401f; color: var(--green); }
+  .badge.posted { background: #14401f; color: var(--green); }
+  .badge.skipped { background: #40201c; color: var(--red); }
+  .badge.new { background: #33290f; color: var(--amber); }
+
+  .shortcut-card { padding: 16px; font-size: 12.5px; color: var(--muted);
+    line-height: 2; }
+  kbd { background: var(--card2); border: 1px solid var(--border);
+    border-radius: 5px; padding: 1px 7px; font-size: 11px;
+    color: var(--text); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--muted); font-weight: 600;
+    padding: 8px 10px; border-bottom: 1px solid var(--border);
+    font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+  td { padding: 10px; border-bottom: 1px solid var(--border);
+    vertical-align: top; }
+  tr:hover td { background: var(--card2); }
+  .history-wrap { margin-top: 22px; }
+  .history-controls { display: flex; gap: 10px; margin-bottom: 12px;
+    flex-wrap: wrap; }
+  .history-controls select, .history-controls input {
+    background: var(--card2); border: 1px solid var(--border);
+    color: var(--text); border-radius: 10px; padding: 8px 12px;
+    font: inherit; font-size: 13px; }
+  .history-controls input { width: 220px; }
+  .history-controls select:focus, .history-controls input:focus {
+    outline: none; border-color: var(--accent); }
+  .reason { color: var(--red); font-size: 12px; }
+  .mini-btn { background: var(--card2); border: 1px solid var(--border);
+    color: var(--text); border-radius: 999px; padding: 3px 12px;
+    font-size: 11.5px; font-weight: 600; }
+  .mini-btn:hover { border-color: var(--accent); }
+  .empty { color: var(--muted); text-align: center; padding: 46px 0;
+    font-size: 14px; }
+  .loading { color: var(--muted); text-align: center; padding: 40px 0;
+    font-size: 13px; letter-spacing: 1px; }
+
+  .overlay { position: fixed; inset: 0; background: rgba(5,7,10,.72);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 50; }
+  .overlay.hidden { display: none; }
+  .dialog { background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px; width: 440px;
+    max-width: 92vw; max-height: 86vh; overflow: auto; }
+  .dialog h3 { margin-bottom: 10px; }
+  .dialog p { color: var(--muted); font-size: 13.5px; margin-bottom: 18px;
+    line-height: 1.5; }
+  .dialog .row { display: flex; gap: 12px; justify-content: center;
+    margin-top: 20px; }
+  .dialog button { border-radius: 999px; padding: 10px 24px;
+    font-weight: 600; }
+  .btn-cancel { background: var(--card2); color: var(--text);
+    border: 1px solid var(--border); }
+  .btn-cancel:hover { border-color: var(--muted); }
+  .btn-yes { background: var(--green); color: #06230f; }
+  .btn-yes:hover { filter: brightness(1.08); }
+  .btn-skip-yes { background: var(--red); color: #2b0808; }
+  .btn-skip-yes:hover { filter: brightness(1.08); }
+  .tweet-confirm { background: #0e1520; border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 14px; font-size: 13.5px;
+    line-height: 1.5; white-space: pre-wrap; max-height: 180px;
+    overflow: auto; margin-bottom: 6px; }
+  .radio-row { display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 14px; transition: border-color .12s; }
+  .radio-row:hover { border-color: var(--muted); }
+  .radio-row.selected { border-color: var(--accent);
+    background: #10273b; }
+  .radio-row input { accent-color: var(--accent); }
+  #skip-other-text { display: none; width: 100%; margin-top: 4px;
+    background: var(--card2); border: 1px solid var(--border);
+    color: var(--text); border-radius: 10px; padding: 9px 12px;
+    font: inherit; }
+  #skip-other-text.show { display: block; }
+  #skip-other-text:focus { outline: none; border-color: var(--accent); }
+
+  .toast { position: fixed; bottom: 28px; left: 50%;
+    transform: translateX(-50%); background: var(--green); color: #06230f;
+    padding: 12px 26px; border-radius: 999px; font-weight: 700;
+    z-index: 60; opacity: 0; transition: opacity .25s;
+    pointer-events: none; max-width: 80vw; }
+  .toast.show { opacity: 1; }
+  .toast.error { background: var(--red); color: #fff; }
+  .hint { color: var(--muted); font-size: 11.5px; text-align: center;
+    margin-top: 6px; }
+  .cooldown-note { border: 1px solid var(--amber); color: var(--amber);
+    background: #1a1509; border-radius: 10px; padding: 10px 14px;
+    font-size: 13px; margin-bottom: 14px; line-height: 1.5; }
+  .cooldown-panel { text-align: center; padding: 34px 20px 30px; }
+  .cooldown-title { font-size: 13px; letter-spacing: 2.5px; font-weight: 700;
+    text-transform: uppercase; color: var(--amber); margin-bottom: 12px; }
+  .cooldown-timer { font-size: 30px; font-weight: 800; color: var(--text);
+    margin-bottom: 8px; }
+  .cooldown-line { color: var(--muted); font-size: 14px; }
+  .cooldown-last { color: var(--muted); font-size: 13px; margin-top: 14px; }
+  .cooldown-last b { color: var(--text); font-weight: 600; }
+  .cooldown-panel .cooldown-note { margin: 18px auto 0; max-width: 420px;
+    text-align: center; }
+  #tweet-style { background: #0e1520; border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px; padding: 4px 8px;
+    font-size: 12px; }
+  #tweet-style:focus { outline: none; border-color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">SAYOX<span>.</span></div>
+  <div class="tagline">India News → X — newsroom publishing console</div>
+  <div class="stats">
+    <div class="chip">Last scan: <b id="s-last-scan">—</b></div>
+    <div class="chip">🟢 Auto scan ON · Next: <b id="s-next-scan">—</b></div>
+    <div class="chip">Stories: <b id="s-stories">0</b></div>
+    <div class="chip">Candidates: <b id="s-candidates">0</b></div>
+    <div class="chip">Posted: <b id="s-posted">0</b></div>
+    <div class="chip">Skipped: <b id="s-skipped">0</b></div>
+    <div class="chip mode" id="s-mode">Manual posting mode</div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <button class="scan-btn" id="scan-btn">⟳ Scan News</button>
+  <button class="scan-btn" id="notify-btn">🔕 Enable notifications</button>
+  <span class="scan-log" id="scan-log"></span>
+  <span class="refresh-note" id="refresh-note"></span>
+</div>
+
+<div class="new-stories" id="new-stories">
+  <span id="new-stories-text">New stories available</span>
+  <button id="new-stories-view">View</button>
+  <button class="dismiss" id="new-stories-dismiss" title="Dismiss">✕</button>
+</div>
+
+<div class="layout">
+  <main>
+    <div class="card" id="current-card">
+      <div class="section-label">Current story — top recommendation</div>
+      <div id="current-body"><div class="loading">Loading dashboard…</div></div>
+    </div>
+
+    <div class="card history-wrap">
+      <div class="section-label">Story history — posted · skipped · copied</div>
+      <div class="history-controls">
+        <input id="history-search" placeholder="Search keyword… (headline, source, tweet)">
+        <select id="history-status">
+          <option value="">All statuses</option>
+          <option value="posted">Posted</option>
+          <option value="skipped">Skipped</option>
+          <option value="copied">Copied</option>
+        </select>
+        <select id="history-source"><option value="">All sources</option></select>
+        <select id="history-days">
+          <option value="">All time</option>
+          <option value="1">Today</option>
+          <option value="7">Last 7 days</option>
+          <option value="30">Last 30 days</option>
+        </select>
+      </div>
+      <div id="history-body"><div class="loading">Loading…</div></div>
+    </div>
+  </main>
+
+  <aside>
+    <div class="card queue-card">
+      <div class="section-label">Up next</div>
+      <div id="queue-body"><div class="loading">Loading…</div></div>
+    </div>
+    <div class="card shortcut-card">
+      <div class="section-label">Keyboard shortcuts</div>
+      <div><kbd>C</kbd> copy tweet &nbsp; <kbd>X</kbd> open X compose</div>
+      <div><kbd>P</kbd> mark posted &nbsp; <kbd>S</kbd> skip story</div>
+      <div><kbd>R</kbd> refresh queue</div>
+    </div>
+  </aside>
+</div>
+
+<div class="overlay hidden" id="confirm-overlay">
+  <div class="dialog">
+    <h3>Mark this story as posted?</h3>
+    <p id="confirm-headline"></p>
+    <div class="section-label">This exact tweet will be logged as posted</div>
+    <div class="tweet-confirm" id="confirm-tweet"></div>
+    <p>The story is removed from the queue and never shown as a candidate
+      again. Nothing is posted to X by this action — it only records your
+      manual post.</p>
+    <div class="row">
+      <button class="btn-cancel" id="confirm-cancel">Cancel</button>
+      <button class="btn-yes" id="confirm-yes">✓ Yes, Posted</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="skip-overlay">
+  <div class="dialog">
+    <h3>Skip this story?</h3>
+    <p id="skip-headline"></p>
+    <div id="skip-reasons"></div>
+    <input id="skip-other-text" placeholder="Reason (optional detail)…">
+    <p>The story is hidden from the queue (never deleted) and stays in
+      history with this reason. You can reconsider it later from the
+      history view.</p>
+    <div class="row">
+      <button class="btn-cancel" id="skip-cancel">Cancel</button>
+      <button class="btn-skip-yes" id="skip-yes">Skip Story</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Copied!</div>
+
+<script>
+"use strict";
+const COMPOSE_URL = "https://x.com/compose/post";
+let state = null;
+let currentAid = null;              // story the user is reading (null = top)
+let pendingPostId = null;
+let pendingSkipId = null;
+let skipReason = null;
+const drafts = new Map();           // article_id -> user-edited tweet text
+const knownIds = new Set();         // queue article_ids already shown
+let unseenCount = 0;
+let lastRefreshAt = null;
+let scanStatus = null;              // latest /api/scan-status payload
+let lastNoticeId = null;            // notification ids already shown (dedup)
+
+const $ = (id) => document.getElementById(id);
+
+function toast(msg, type) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.toggle("error", type === "error");
+  t.classList.add("show");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove("show"), 2400);
+}
+
+function esc(s) {
+  return (s || "").replace(/[&<>"']/g, c =>
+    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function parseIso(iso) {
+  if (!iso) return null;
+  const d = new Date(iso.replace(" ", "T") +
+                     (/(Z|[+-]\d\d:?\d\d)$/.test(iso) ? "" : "Z"));
+  return isNaN(d) ? null : d;
+}
+
+function timeAgo(iso) {
+  const d = parseIso(iso);
+  if (!d) return "unknown";
+  const s = (Date.now() - d.getTime()) / 1000;
+  if (s < 0) return "just now";
+  if (s < 3600) return Math.max(1, Math.round(s / 60)) + "m ago";
+  if (s < 86400) return Math.round(s / 3600) + "h ago";
+  return Math.round(s / 86400) + "d ago";
+}
+
+function absTime(iso) {
+  const d = parseIso(iso);
+  if (!d) return "";
+  return d.toLocaleString(undefined,
+    {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"});
+}
+
+async function api(path, body) {
+  const opts = body ? {method: "POST",
+                       headers: {"Content-Type": "application/json"},
+                       body: JSON.stringify(body)} : {};
+  const r = await fetch(path, opts);
+  return r.json();
+}
+
+// ---------------------------------------------------------------------------
+// background scanner status + notifications
+// (the scanner itself runs SERVER-SIDE; this page only reads its status)
+// ---------------------------------------------------------------------------
+
+function fmtCountdown(iso) {
+  const d = parseIso(iso);
+  if (!d) return "—";
+  const s = Math.round((d.getTime() - Date.now()) / 1000);
+  if (s <= 0) return "now";
+  return s >= 90 ? Math.round(s / 60) + "m" : s + "s";
+}
+
+function tickNextScan() {
+  if (scanStatus) $("s-next-scan").textContent =
+    fmtCountdown(scanStatus.next_scan_at);
+}
+
+function notifyNews(n) {
+  // ONE notification per scan event; headline only when the gates
+  // actually produced a recommendation during that scan
+  const isRec = !!n.headline;
+  const title = isRec ? "SAYOX — New recommendation"
+                      : "SAYOX — New news detected";
+  const body = isRec ? n.headline
+    : n.discovered + " new stor" + (n.discovered === 1 ? "y" : "ies") +
+      " detected.";
+  if ("Notification" in window && Notification.permission === "granted") {
+    try {
+      // tag dedupes at the browser level across poll cycles
+      new Notification(title, {body: body, tag: "sayox-news-" + n.id});
+    } catch (e) { /* in-app toast below is the fallback */ }
+  }
+  toast(title.replace("SAYOX — ", "") + ": " + body);
+  loadState("New stories detected");
+}
+
+async function pollScanStatus() {
+  try {
+    const p = await api("/api/scan-status");
+    scanStatus = p.scan_status;
+    tickNextScan();
+    const n = scanStatus && scanStatus.notification;
+    if (n && n.id !== lastNoticeId) {
+      const isNew = lastNoticeId !== null;
+      lastNoticeId = n.id;
+      // the first poll only records the current id — never notify for
+      // news that arrived before this page was opened
+      if (isNew) notifyNews(n);
+    }
+  } catch (e) { /* scanner status polling is best-effort */ }
+}
+
+function updateNotifyBtn() {
+  const btn = $("notify-btn");
+  if (!("Notification" in window)) {
+    btn.textContent = "🔕 Notifications unsupported";
+    btn.disabled = true;
+    return;
+  }
+  btn.textContent =
+    Notification.permission === "granted" ? "🔔 Notifications ON"
+    : Notification.permission === "denied" ? "🔕 Notifications blocked"
+    : "🔕 Enable notifications";
+}
+
+// ---------------------------------------------------------------------------
+// current story + tweet editor
+// ---------------------------------------------------------------------------
+
+function currentEntry() {
+  // the engine's gated recommendation is the ONLY current story. While
+  // the gate is closed (cooldown / no story clears the quality bar)
+  // there is NO current story — the queue must never bypass the gate.
+  if (!state || state.current == null) return null;
+  if (currentAid == null) return state.current;
+  const found = state.queue.find(q => q.article_id === currentAid);
+  return found || state.current;
+}
+
+function editorText(entry) {
+  return drafts.has(entry.article_id) ? drafts.get(entry.article_id)
+                                      : entry.tweet;
+}
+
+function validateTweetText(text, limit) {
+  if (!text || !text.trim()) return [false, "Tweet is empty"];
+  if (text.length > limit)
+    return [false, "Too long — " + text.length + "/" + limit + " characters"];
+  if (text.trim().length < 20) return [false, "Too short (minimum 20 characters)"];
+  return [true, ""];
+}
+
+function updateEditorState() {
+  const entry = currentEntry();
+  const ed = $("tweet-editor");
+  if (!entry || !ed) return;
+  const text = ed.value;
+  const limit = entry.char_limit || 280;
+  const [ok, msg] = validateTweetText(text, limit);
+  const counter = $("editor-counter");
+  counter.textContent = text.length + " / " + limit;
+  counter.className = "counter" +
+    (text.length > limit ? " over" : text.length >= limit - 20 ? " warn" : "");
+  ed.classList.toggle("over", text.length > limit);
+  const msgEl = $("editor-msg");
+  const warn = /https?:\/\//.test(text);
+  if (!ok) { msgEl.textContent = "✕ " + msg; msgEl.className = "editor-msg err"; }
+  else if (warn) { msgEl.textContent = "⚠ contains a link — tweets normally exclude URLs";
+                   msgEl.className = "editor-msg"; }
+  else { msgEl.textContent = ""; msgEl.className = "editor-msg"; }
+  const copyBtn = $("btn-copy");
+  if (copyBtn) copyBtn.disabled = !ok;
+}
+
+function tagInText(tag, text) {
+  return new RegExp("(^|\\s)" + tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") +
+                    "(?=\\s|$)").test(text);
+}
+
+function removeTag(tag) {
+  const entry = currentEntry();
+  const ed = $("tweet-editor");
+  if (!entry || !ed) return;
+  const re = new RegExp("\\s*" + tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") +
+                        "(?=\\s|$)", "");
+  ed.value = ed.value.replace(re, "").replace(/\s{2,}/g, " ").trimEnd();
+  drafts.set(entry.article_id, ed.value);
+  updateEditorState();
+  renderTagChips(entry);
+}
+
+function addTag(tag) {
+  const entry = currentEntry();
+  const ed = $("tweet-editor");
+  if (!entry || !ed) return;
+  if (tagInText(tag, ed.value)) return;
+  const candidate = ed.value.replace(/\s+$/, "") + " " + tag;
+  if (candidate.length > (entry.char_limit || 280)) {
+    toast("Cannot add " + tag + " — would exceed 280 characters", "error");
+    return;
+  }
+  ed.value = candidate;
+  drafts.set(entry.article_id, ed.value);
+  updateEditorState();
+  renderTagChips(entry);
+}
+
+function resetTweet() {
+  const entry = currentEntry();
+  const ed = $("tweet-editor");
+  if (!entry || !ed) return;
+  drafts.delete(entry.article_id);
+  ed.value = entry.tweet;
+  updateEditorState();
+  renderTagChips(entry);
+  toast("Reset to generated tweet");
+}
+
+function renderTagChips(entry) {
+  const box = $("tag-list");
+  if (!box) return;
+  const ed = $("tweet-editor");
+  const text = ed ? ed.value : editorText(entry);
+  const tags = entry.hashtags || [];
+  if (!tags.length) {
+    box.innerHTML = '<span class="tag-none">No suggested hashtags</span>';
+    return;
+  }
+  box.innerHTML = tags.map(tag => {
+    const present = tagInText(tag, text);
+    return present
+      ? '<span class="tag-chip">' + esc(tag) +
+        '<button class="x" data-tag="' + esc(tag) + '" title="Remove ' +
+        esc(tag) + ' from the tweet">✕</button></span>'
+      : '<span class="tag-chip off">' + esc(tag) +
+        '<button class="plus" data-tag="' + esc(tag) + '" title="Add ' +
+        esc(tag) + ' back">＋</button></span>';
+  }).join("");
+  box.querySelectorAll("button.x").forEach(b =>
+    b.onclick = () => removeTag(b.dataset.tag));
+  box.querySelectorAll("button.plus").forEach(b =>
+    b.onclick = () => addTag(b.dataset.tag));
+}
+
+const SIGNAL_INFO = [
+  ["importance", "Importance", "How big the story is — event keywords, weighted by source reliability."],
+  ["india", "India relevance", "How India-focused the story is (topics, places, institutions, source origin)."],
+  ["freshness", "Freshness", "100 if published within the last hour, decaying to 0 at 48 hours."],
+  ["trending", "Trending / coverage", "Topic momentum — how many outlets are covering the same story."],
+  ["source_quality", "Source quality", "The reliability rating of the originating feed."]
+];
+
+function kindBadge(kind) {
+  const k = (kind || "standard").toLowerCase();
+  return '<span class="kind ' + k + '">' + esc(k) + "</span>";
+}
+
+function renderCurrent() {
+  const body = $("current-body");
+  const c = currentEntry();
+  if (!c) {
+    // gate closed: cooldown, or nothing clears the quality bar. No
+    // story card, no copy / open X / mark-posted actions — ever.
+    if (state && state.cooldown_minutes_left > 0) {
+      const lp = state.last_posted;
+      body.innerHTML = `
+        <div class="cooldown-panel">
+          <div class="cooldown-title">Cooldown active</div>
+          <div class="cooldown-timer">Next recommendation in
+            ${state.cooldown_minutes_left} minute${state.cooldown_minutes_left === 1 ? "" : "s"}
+          </div>
+          <div class="cooldown-line">SAYOX is waiting for a stronger story.</div>
+          ${lp ? '<div class="cooldown-last">Last posted: ' + esc(lp.headline) +
+                 ' · ' + esc(timeAgo(lp.posted_at)) + '</div>' : ""}
+          <div class="cooldown-note">Only a genuinely breaking story overrides
+            the cooldown. The queue below is for browsing only.</div>
+        </div>`;
+    } else {
+      body.innerHTML = '<div class="empty">' + esc((state && state.recommendation_note) ||
+        "No candidates — scan for news or all stories are handled.") + '</div>';
+    }
+    return;
+  }
+  const bars = SIGNAL_INFO.map(([key, name, desc]) => {
+    const v = Math.max(0, Math.min(100, Number(c[key]) || 0));
+    return '<div class="signal-row"><span class="name">' + name +
+      '</span><span class="bar"><i style="width:' + v + '%"></i></span>' +
+      '<span class="val">' + v + "</span></div>" +
+      '<div class="score-note" style="margin-top:2px">' + desc + "</div>";
+  }).join("");
+  body.innerHTML = `
+    <div class="story-head">
+      <div style="min-width:0">
+        <h2 class="headline">${kindBadge(c.kind)}${esc(c.headline)}</h2>
+        <div class="source-row">
+          <span>Source: <b style="color:var(--text)">${esc(c.source)}</b></span>
+          <span title="${esc(absTime(c.published_at))}">Published ${esc(timeAgo(c.published_at))}</span>
+          <a href="${esc(c.url)}" target="_blank" rel="noopener">Article link ↗</a>
+          <button class="link-btn" id="btn-article">Open article</button>
+        </div>
+      </div>
+      <div class="reach"><div class="num">${c.reach}</div><div class="lbl">REACH<br>SCORE</div></div>
+    </div>
+    <details class="why" open>
+      <summary>Why this score?</summary>
+      <div class="summary-line">${esc(c.why)}</div>
+      ${bars}
+      <div class="score-note">Reach Score ranks editorial distribution
+        priority only — it is <b>not</b> a prediction of impressions or
+        engagement.</div>
+    </details>
+    <div class="tweet-box">
+      <div class="label"><span>Tweet — editable before copying</span>
+        <span style="display:flex;gap:8px;align-items:center">
+          <select id="tweet-style" title="Switch between the generated tweet variants"></select>
+          <button class="reset-btn" id="btn-reset" title="Discard your edits">Reset to generated</button>
+        </span>
+      </div>
+      <textarea id="tweet-editor" spellcheck="false"></textarea>
+      <div class="editor-foot">
+        <span class="counter" id="editor-counter"></span>
+        <span class="editor-msg" id="editor-msg"></span>
+      </div>
+      <div class="tag-block">
+        <div class="tlabel">Suggested hashtags — remove or add back individually</div>
+        <div class="tag-list" id="tag-list"></div>
+      </div>
+    </div>
+    <div class="actions">
+      <div class="action">
+        <button class="round x" id="btn-x" title="Open X compose (X)">𝕏</button>
+        <div class="desc">Open X compose — posting stays manual</div>
+      </div>
+      <div class="action">
+        <button class="round copy" id="btn-copy" title="Copy tweet (C)">⧉</button>
+        <div class="desc">Copy the edited tweet + hashtags</div>
+      </div>
+      <div class="action">
+        <button class="round tick" id="btn-tick" title="Mark posted (P)">✓</button>
+        <div class="desc">Mark as posted — logs it, never posts</div>
+      </div>
+    </div>
+    <div style="text-align:center">
+      <button class="skip-btn" id="btn-skip">Skip this story</button>
+    </div>
+    <div class="hint"><kbd>C</kbd> copy &nbsp; <kbd>X</kbd> open X &nbsp; <kbd>P</kbd> mark posted &nbsp; <kbd>S</kbd> skip &nbsp; <kbd>R</kbd> refresh</div>`;
+
+  const ed = $("tweet-editor");
+  ed.value = editorText(c);
+  ed.addEventListener("input", () => {
+    drafts.set(c.article_id, ed.value);
+    updateEditorState();
+    renderTagChips(c);
+  });
+  // variant switcher: the 3 generated options, best hook pre-selected.
+  // Never clobbers the user's own edits — only applies when no draft
+  // exists for this story.
+  const sel = $("tweet-style");
+  if (sel) {
+    const opts = c.options || [];
+    sel.style.display = opts.length > 1 ? "" : "none";
+    sel.innerHTML = opts.map(o =>
+      '<option value="' + esc(o.style) + '">' + esc(o.style) +
+      " · hook " + o.hook + " · " + o.char_count + " ch</option>").join("");
+    const chosen = opts.find(o => o.text === c.tweet);
+    if (chosen) sel.value = chosen.style;
+    sel.onchange = () => {
+      if (drafts.has(c.article_id)) return;
+      const o = opts.find(x => x.style === sel.value);
+      if (o) { ed.value = o.text; updateEditorState(); renderTagChips(c); }
+    };
+  }
+  updateEditorState();
+  renderTagChips(c);
+  $("btn-reset").onclick = resetTweet;
+  $("btn-x").onclick = openX;
+  $("btn-copy").onclick = () => copyTweet(c);
+  $("btn-tick").onclick = () => confirmPosted(c);
+  $("btn-skip").onclick = () => openSkipDialog(c);
+  $("btn-article").onclick = () => window.open(c.url, "_blank", "noopener");
+}
+
+// ---------------------------------------------------------------------------
+// actions
+// ---------------------------------------------------------------------------
+
+async function copyTweet(c) {
+  const ed = $("tweet-editor");
+  const text = ed ? ed.value : c.tweet;
+  const limit = c.char_limit || 280;
+  const [ok, msg] = validateTweetText(text, limit);
+  if (!ok) { toast(msg, "error"); return; }
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (e) {
+    toast("Copy failed — select the tweet text manually", "error");
+    return;
+  }
+  const btn = $("btn-copy");
+  if (btn) {
+    btn.classList.add("copied");
+    btn.textContent = "✓";
+    setTimeout(() => {
+      btn.classList.remove("copied");
+      btn.textContent = "⧉";
+    }, 2000);
+  }
+  toast("Copied! Story stays pending until you mark it posted");
+  await api("/api/copied", {article_id: c.article_id});
+  const payload = await api("/api/state");   // re-read; copy ≠ posted
+  applyState(payload);
+}
+
+function openX() {
+  window.open(COMPOSE_URL, "_blank", "noopener");
+  toast("X compose opened — paste (⌘V) and post manually");
+}
+
+function confirmPosted(c) {
+  const ed = $("tweet-editor");
+  const text = ed ? ed.value : c.tweet;
+  const [ok, msg] = validateTweetText(text, c.char_limit || 280);
+  if (!ok) { toast("Fix the tweet first: " + msg, "error"); return; }
+  pendingPostId = c.article_id;
+  $("confirm-headline").textContent = "“" + c.headline + "”";
+  $("confirm-tweet").textContent = text;
+  $("confirm-overlay").classList.remove("hidden");
+}
+
+async function doMarkPosted() {
+  $("confirm-overlay").classList.add("hidden");
+  const ed = $("tweet-editor");
+  const c = currentEntry();
+  const tweet = ed && c ? ed.value : null;
+  if (pendingPostId == null) return;
+  const payload = await api("/api/posted",
+    {article_id: pendingPostId, tweet});
+  if (payload.result && payload.result.ok) {
+    toast("Marked as posted ✓");
+    drafts.delete(pendingPostId);
+    currentAid = null;              // follow the new top recommendation
+  } else {
+    toast("Could not mark posted: " +
+          (payload.result ? payload.result.error : "error"), "error");
+  }
+  pendingPostId = null;
+  applyState(payload);
+}
+
+function openSkipDialog(c) {
+  pendingSkipId = c.article_id;
+  skipReason = null;
+  $("skip-headline").textContent = "“" + c.headline + "”";
+  const reasons = state && state.skip_reasons ?
+    state.skip_reasons : ["Not important", "Duplicate",
+    "Not suitable for X", "Already covered", "Other"];
+  $("skip-reasons").innerHTML = reasons.map((r, i) =>
+    '<label class="radio-row"><input type="radio" name="skip-reason" ' +
+    'value="' + esc(r) + '"' + (i === 0 ? " checked" : "") + ">" +
+    esc(r) + "</label>").join("");
+  $("skip-other-text").value = "";
+  $("skip-other-text").classList.remove("show");
+  const radios = $("skip-reasons").querySelectorAll("input");
+  radios.forEach(r => r.onchange = () => {
+    skipReason = r.value;
+    $("skip-reasons").querySelectorAll(".radio-row").forEach(row =>
+      row.classList.toggle("selected",
+        row.querySelector("input").checked));
+    $("skip-other-text").classList.toggle("show", r.value === "Other");
+    if (r.value === "Other") $("skip-other-text").focus();
+  });
+  radios[0].closest(".radio-row").classList.add("selected");
+  skipReason = radios[0].value;
+  $("skip-overlay").classList.remove("hidden");
+}
+
+async function doSkip() {
+  $("skip-overlay").classList.add("hidden");
+  if (pendingSkipId == null) return;
+  let reason = skipReason || "Other";
+  if (reason === "Other") {
+    const detail = $("skip-other-text").value.trim();
+    reason = detail ? "Other — " + detail : "Other";
+  }
+  const payload = await api("/api/skip",
+    {article_id: pendingSkipId, reason});
+  if (payload.result && payload.result.ok) {
+    toast("Skipped: " + reason);
+    drafts.delete(pendingSkipId);
+    currentAid = null;
+  } else {
+    toast("Could not skip: " +
+          (payload.result ? payload.result.error : "error"), "error");
+  }
+  pendingSkipId = null;
+  applyState(payload);
+}
+
+async function reconsider(aid) {
+  const payload = await api("/api/unskip", {article_id: aid});
+  if (payload.result && payload.result.ok) {
+    toast("Story reconsidered — back in the queue");
+    applyState(payload);
+    loadHistory();
+  } else {
+    toast("Could not reconsider: " +
+          (payload.result ? payload.result.error : "error"), "error");
+  }
+}
+
+// ---------------------------------------------------------------------------
+// queue + history rendering
+// ---------------------------------------------------------------------------
+
+function badge(status) {
+  const s = (status || "ready").toLowerCase();
+  return '<span class="badge ' + s + '">' + s.toUpperCase() + "</span>";
+}
+
+function renderQueue() {
+  const el = $("queue-body");
+  if (!state || !state.queue || !state.queue.length) {
+    el.innerHTML = '<div class="empty">Queue empty.</div>';
+    return;
+  }
+  const cur = currentEntry();
+  const items = state.queue.filter(q => !cur || q.article_id !== cur.article_id);
+  if (!items.length) {
+    el.innerHTML = '<div class="empty">No further candidates.</div>';
+    return;
+  }
+  el.innerHTML = items.map(q => `
+    <div class="queue-item${cur && q.article_id === cur.article_id ? " active" : ""}"
+         data-aid="${q.article_id}">
+      <div class="q-head">${kindBadge(q.kind)}${esc(q.headline)}</div>
+      <div class="q-meta">
+        <span>${esc(q.source)}</span>
+        <span>${esc(timeAgo(q.published_at))}</span>
+        ${badge(q.status)}
+      </div>
+      <div class="q-meta">
+        <span class="q-score">Reach ${q.reach}</span>
+        <span class="q-sig">India <b>${q.india}</b></span>
+        <span class="q-sig">Trend <b>${q.trending}</b></span>
+        <span class="q-sig">Fresh <b>${q.freshness}</b></span>
+      </div>
+    </div>`).join("");
+  el.querySelectorAll(".queue-item").forEach(node => {
+    node.onclick = () => {
+      // while the recommendation gate is closed (cooldown / quality bar)
+      // a queue click must NOT open a full story card with posting actions
+      if (!state || state.current == null) {
+        toast((state && state.cooldown_minutes_left > 0)
+          ? "Cooldown active — no recommendation right now"
+          : "No story worth posting right now", "error");
+        return;
+      }
+      currentAid = parseInt(node.dataset.aid, 10);
+      hideNewStories();
+      renderCurrent();
+      renderQueue();
+      window.scrollTo({top: 0, behavior: "smooth"});
+    };
+  });
+}
+
+function badgeFor(r) { return badge(r.status); }
+
+function renderHistory(rows) {
+  const el = $("history-body");
+  if (!rows) rows = (state && state.history) || [];
+  if (!rows.length) {
+    el.innerHTML = '<div class="empty">No stories match — post, skip or copy something.</div>';
+    return;
+  }
+  el.innerHTML = `<table>
+    <tr><th>When</th><th>Headline</th><th>Source</th><th>Tweet</th>
+        <th>Status</th><th></th></tr>
+    ${rows.map(r => `<tr>
+      <td style="white-space:nowrap" title="${esc(absTime(r.posted_at))}">
+        ${esc(timeAgo(r.posted_at))}</td>
+      <td style="max-width:200px">${esc(r.headline)}</td>
+      <td>${esc(r.source || "—")}</td>
+      <td style="max-width:300px;color:var(--muted)">${
+        r.tweet ? esc(r.tweet) :
+        (r.status === "skipped" ?
+         '<span class="reason">skipped — ' + esc(r.skip_reason || "manual") + "</span>" :
+         "<i>copied, not yet posted</i>")}</td>
+      <td>${badgeFor(r)}</td>
+      <td style="white-space:nowrap">
+        ${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener" title="Open article">↗</a>` : ""}
+        ${r.status === "skipped" && r.article_id ?
+          `<button class="mini-btn" data-unskip="${r.article_id}">Reconsider</button>` : ""}
+      </td>
+    </tr>`).join("")}</table>`;
+  el.querySelectorAll("button[data-unskip]").forEach(b =>
+    b.onclick = () => reconsider(parseInt(b.dataset.unskip, 10)));
+}
+
+let historySources = new Set();
+function refreshSourceFilter(rows) {
+  (rows || []).forEach(r => { if (r.source) historySources.add(r.source); });
+  const sel = $("history-source");
+  const current = sel.value;
+  const opts = ["All sources"].concat([...historySources].sort());
+  sel.innerHTML = opts.map(s =>
+    '<option value="' + (s === "All sources" ? "" : esc(s)) + '">' +
+    esc(s) + "</option>").join("");
+  if ([...sel.options].some(o => o.value === current)) sel.value = current;
+}
+
+async function loadHistory() {
+  const q = $("history-search").value.trim();
+  const status = $("history-status").value;
+  const source = $("history-source").value;
+  const days = $("history-days").value;
+  const params = new URLSearchParams();
+  if (q) params.set("q", q);
+  if (status) params.set("status", status);
+  if (source) params.set("source", source);
+  if (days) params.set("days", days);
+  const suffix = params.toString() ? "?" + params.toString() : "";
+  try {
+    const payload = await api("/api/history" + suffix);
+    renderHistory(payload.history || []);
+    if (!suffix) refreshSourceFilter(payload.history || []);
+  } catch (e) {
+    toast("Could not load history", "error");
+  }
+}
+
+// ---------------------------------------------------------------------------
+// state application (preserves what the user is reading + their edits)
+// ---------------------------------------------------------------------------
+
+function hideNewStories() {
+  unseenCount = 0;
+  $("new-stories").classList.remove("show");
+}
+
+function applyState(s) {
+  if (!s) return;
+  state = s;
+  const queueIds = (s.queue || []).map(q => q.article_id);
+
+  // new candidates the user has not seen yet (never on the first load)
+  const firstLoad = knownIds.size === 0;
+  const fresh = firstLoad ? []
+    : queueIds.filter(id => !knownIds.has(id));
+  knownIds.forEach(id => { if (!queueIds.includes(id)) knownIds.delete(id); });
+  queueIds.forEach(id => knownIds.add(id));
+
+  // keep what the user is reading if it is still a candidate
+  if (currentAid != null && !queueIds.includes(currentAid)) {
+    currentAid = null;             // posted / skipped / vanished elsewhere
+  }
+  const cur = currentEntry();
+  if (cur) {
+    const genuinelyNew = fresh.filter(id => id !== cur.article_id);
+    if (genuinelyNew.length) {
+      unseenCount += genuinelyNew.length;
+      $("new-stories-text").textContent =
+        unseenCount + " new stor" + (unseenCount === 1 ? "y" : "ies") +
+        " available — still showing your current story";
+      $("new-stories").classList.add("show");
+    }
+  } else {
+    hideNewStories();
+  }
+
+  $("s-last-scan").textContent = s.last_scan ? timeAgo(s.last_scan) : "—";
+  $("s-stories").textContent = s.stories_found;
+  $("s-candidates").textContent = s.candidates;
+  $("s-posted").textContent = s.posted;
+  $("s-skipped").textContent = s.skipped;
+  $("s-mode").textContent = s.publishing_status || "Manual posting mode";
+
+  // never rip the textarea out from under the user mid-edit
+  const editing = document.activeElement === $("tweet-editor");
+  if (!editing) renderCurrent();
+  renderQueue();
+  renderHistory();
+  refreshSourceFilter(s.history);
+}
+
+async function loadState(note) {
+  try {
+    const s = await api("/api/state");
+    applyState(s);
+    lastRefreshAt = Date.now();
+    if (note) $("refresh-note").textContent = note;
+  } catch (e) {
+    toast("Dashboard refresh failed", "error");
+  }
+}
+
+async function scanNews() {
+  const btn = $("scan-btn"), logEl = $("scan-log");
+  btn.disabled = true;
+  logEl.textContent = "Scanning sources…";
+  try {
+    const t0 = Date.now();
+    const payload = await api("/api/scan", {});
+    const st = payload.scan_stats || {};
+    logEl.textContent = "✓ " + (st.sources || 0) + " sources · " +
+      (st.discovered || 0) + " new · " + (st.duplicates || 0) + " dupes · " +
+      (st.clusters || 0) + " clusters · " +
+      ((Date.now() - t0) / 1000).toFixed(1) + "s";
+    // this scan's own toast covers its news — mark its notification as
+    // seen so the status poller never shows it a second time
+    if (payload.scan_status) {
+      scanStatus = payload.scan_status;
+      tickNextScan();
+      const n = scanStatus.notification;
+      if (n) lastNoticeId = n.id;
+    }
+    applyState(payload);
+    loadHistory();
+    lastRefreshAt = Date.now();
+    toast("Scan complete — " + (st.discovered || 0) + " new stories found");
+  } catch (e) {
+    logEl.textContent = "Scan failed: " + e;
+    toast("Scan failed", "error");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// wiring
+// ---------------------------------------------------------------------------
+
+$("scan-btn").onclick = scanNews;
+$("notify-btn").onclick = async () => {
+  if (!("Notification" in window)) return;
+  // permission is requested ONLY from this explicit user click
+  if (Notification.permission === "default")
+    await Notification.requestPermission();
+  updateNotifyBtn();
+};
+$("confirm-cancel").onclick = () => $("confirm-overlay").classList.add("hidden");
+$("confirm-yes").onclick = doMarkPosted;
+$("confirm-overlay").onclick = (e) => {
+  if (e.target === $("confirm-overlay"))
+    $("confirm-overlay").classList.add("hidden");
+};
+$("skip-cancel").onclick = () => $("skip-overlay").classList.add("hidden");
+$("skip-yes").onclick = doSkip;
+$("skip-overlay").onclick = (e) => {
+  if (e.target === $("skip-overlay"))
+    $("skip-overlay").classList.add("hidden");
+};
+$("new-stories-view").onclick = () => {
+  currentAid = null;               // jump to the new top recommendation
+  hideNewStories();
+  renderCurrent();
+  renderQueue();
+  window.scrollTo({top: 0, behavior: "smooth"});
+};
+$("new-stories-dismiss").onclick = hideNewStories;
+
+["history-search", "history-status", "history-source",
+ "history-days"].forEach(id => {
+  const el = $(id);
+  const ev = id === "history-search" ? "input" : "change";
+  let timer = null;
+  el.addEventListener(ev, () => {
+    clearTimeout(timer);
+    timer = setTimeout(loadHistory, id === "history-search" ? 250 : 0);
+  });
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+  const postOpen = !$("confirm-overlay").classList.contains("hidden");
+  const skipOpen = !$("skip-overlay").classList.contains("hidden");
+  if (postOpen || skipOpen) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (postOpen) doMarkPosted(); else doSkip();
+    }
+    if (e.key === "Escape") {
+      $("confirm-overlay").classList.add("hidden");
+      $("skip-overlay").classList.add("hidden");
+    }
+    return;
+  }
+  const t = document.activeElement;
+  if (t && /INPUT|TEXTAREA|SELECT/.test(t.tagName)) return;
+  const c = currentEntry();
+  switch (e.key.toLowerCase()) {
+    case "c": if (c) { e.preventDefault(); copyTweet(c); } break;
+    case "x": e.preventDefault(); openX(); break;
+    case "p": if (c) { e.preventDefault(); confirmPosted(c); } break;
+    case "s": if (c) { e.preventDefault(); openSkipDialog(c); } break;
+    case "r": e.preventDefault(); loadState("Refreshed just now"); break;
+  }
+});
+
+(async function init() {
+  await loadState();
+  loadHistory();
+  const interval = (state && state.auto_refresh_seconds) || 300;
+  setInterval(() => {
+    // display-only refresh: reads the DB, never touches the RSS sources
+    loadState("Auto-refreshed " + new Date().toLocaleTimeString());
+  }, interval * 1000);
+  // scanner status polling (display + notifications only — scanning
+  // itself is server-side; the poller never triggers a scan)
+  updateNotifyBtn();
+  await pollScanStatus();
+  setInterval(pollScanStatus, 15000);
+  setInterval(tickNextScan, 1000);      // live "Next:" countdown
+})();
+</script>
+</body>
+</html>
