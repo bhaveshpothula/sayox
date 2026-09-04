@@ -1,6 +1,6 @@
 # India News Bot
 
-Fully automated India-first X news bot. **Zero AI tokens by default** — the entire pipeline (RSS → normalize → dedup → cluster → India scoring → importance → tweet) is deterministic.
+SAYOX — a real-time India-first news intelligence platform. **Zero AI tokens by default** — the entire pipeline (RSS → normalize → dedup → cluster → India scoring → importance → tweet) is deterministic.
 
 ## Quick start (dry run — safe, posts nothing)
 
